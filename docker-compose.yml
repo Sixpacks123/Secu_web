@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  mariadb:
+    build:
+      context: ./mariadb
+      dockerfile: Dockerfile
+    container_name: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: your_database
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - backend
+
+  nodejs1:
+    build:
+      context: ./nodejs
+      dockerfile: Dockerfile
+    container_name: nodejs1
+    depends_on:
+      - mariadb
+    networks:
+      - backend
+      - frontend
+
+  nodejs2:
+    build:
+      context: ./nodejs
+      dockerfile: Dockerfile
+    container_name: nodejs2
+    depends_on:
+      - mariadb
+    networks:
+      - backend
+      - frontend
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    depends_on:
+      - nodejs1
+      - nodejs2
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - frontend
+
+#  nginx-waf:
+#    build:
+#      context: ./nginx-waf
+#      dockerfile: Dockerfile
+#    container_name: nginx_waf
+#    depends_on:
+#      - nginx
+#    networks:
+#      - frontend
+
+volumes:
+  dbdata:
+
+networks:
+  backend:
+  frontend:
