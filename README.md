@@ -62,61 +62,80 @@ Ce projet vise à créer un environnement Docker Swarm avec plusieurs réplicas 
    ```bash
    docker service ls
    ```
-6. **Configuration Master MariaDB :**
+Bien sûr, voici une explication plus détaillée sur la configuration de la réplication maître-esclave (master-slave) dans MariaDB en suivant les étapes sur le serveur principal (master) et le serveur secondaire (slave) :
 
-   Pour configurer MariaDB en tant que maître dans votre environnement Docker Swarm, vous devrez suivre ces étapes :
+# MariDb config
+### Sur le Serveur Principal (Master) :
 
-   - Assurez-vous que le service MariaDB est en cours d'exécution.
+1. **Connectez-vous en tant qu'administrateur** :
 
-   - Connectez-vous à la base de données MariaDB en utilisant l'une des réplicas en cours d'exécution :
+   Assurez-vous d'être connecté en tant qu'administrateur (`root` ou un utilisateur avec des privilèges administratifs) sur le serveur principal.
 
-   ```bash
-   docker exec -it <ID_DU_CONTENEUR_MARIADB> mysql -u root -p
-      ```
+2. **Accordez les Privilèges de Réplication** :
 
-   - Une fois connecté à MariaDB, configurez le serveur en tant que maître en exécutant les commandes SQL suivantes (remplacez les valeurs par celles appropriées) :
+   Accordez les privilèges de réplication à un utilisateur spécifique qui sera utilisé par le serveur secondaire pour se connecter au serveur principal. Remplacez `replica` et `replica_pass` par les valeurs de votre choix :
 
-      ```sql
-      STOP SLAVE;
-      RESET SLAVE;
+   ```sql
+   GRANT REPLICATION SLAVE ON *.* TO 'replica'@'%' IDENTIFIED BY 'replica_pass';
+   FLUSH PRIVILEGES;
+   ```
 
-      CHANGE MASTER TO
-      MASTER_HOST='<ADRESSE_IP_DU_MAITRE>',
-         MASTER_PORT=3306,
-         MASTER_USER='replication_user',
-         MASTER_PASSWORD='replication_password',
-         MASTER_AUTO_POSITION=1;
+3. **Obtenez les Informations de Réplication** :
 
-         START SLAVE;
-         ```
-> Assurez-vous de remplacer `<ADRESSE_IP_DU_MAITRE>`, `replication_user` et `replication_password` par les informations appropriées.
+   Exécutez la commande suivante pour obtenir les informations nécessaires à la configuration de la réplication sur le serveur secondaire. Vous aurez besoin du nom du fichier log binaire (Binary Log File) et de la position du log binaire (Position in Log File) :
 
-7. **Configuration Slave MariaDB :**
+   ```sql
+   SHOW MASTER STATUS;
+   ```
 
-Pour configurer MariaDB en tant qu'esclave dans votre environnement Docker Swarm, suivez ces étapes :
-- Assurez-vous que le service MariaDB est en cours d'exécution.
-- Connectez-vous à la base de données MariaDB en utilisant l'une des réplicas en cours d'exécution :
+   Prenez note du nom du fichier log binaire (par exemple, `mysql-bin.000001`) et de la position du log (par exemple, `123`).
 
-            ```bash
-            docker exec -it <ID_DU_CONTENEUR_MARIADB> mysql -u root -p
-               ```
+### Sur le Serveur Secondaire (Slave) :
 
-  - Une fois connecté à MariaDB, configurez le serveur en tant qu'esclave en exécutant les commandes SQL suivantes (remplacez les valeurs par celles appropriées) :
+1. **Connectez-vous en tant qu'administrateur** :
 
-               ```sql
-               STOP SLAVE;
-               RESET SLAVE;
+   Connectez-vous en tant qu'administrateur (`root` ou un utilisateur avec des privilèges administratifs) sur le serveur secondaire.
 
-               CHANGE MASTER TO
-               MASTER_HOST='<ADRESSE_IP_DU_MAITRE>',
-                  MASTER_PORT=3306,
-                  MASTER_USER='replication_user',
-                  MASTER_PASSWORD='replication_password',
-                  MASTER_AUTO_POSITION=1;
+2. **Configurez la Réplication** :
 
-                  START SLAVE;
-                  ```
-Assurez-vous de remplacer `<ADRESSE_IP_DU_MAITRE>`, `replication_user` et `replication_password` par les informations appropriées.
-Cela configure MariaDB en mode maître-esclave pour la réplication des données. Assurez-vous que les informations de configuration sont cohérentes entre le maître et l'esclave.
+   Utilisez les informations obtenues précédemment pour configurer la réplication sur le serveur secondaire en utilisant la commande `CHANGE MASTER TO`. Assurez-vous de remplacer `master_host`, `master_user`, `master_password`, `master_log_file`, et `master_log_pos` par les valeurs appropriées :
 
+   ```sql
+   CHANGE MASTER TO
+     MASTER_HOST = 'adresse_ip_ou_nom_du_serveur_principal',
+     MASTER_USER = 'replica',
+     MASTER_PASSWORD = 'replica_pass',
+     MASTER_LOG_FILE = 'nom_du_fichier_log_binaire',
+     MASTER_LOG_POS = position_du_log;
+   ```
 
+   Par exemple :
+
+   ```sql
+   CHANGE MASTER TO
+     MASTER_HOST = '192.168.1.100',
+     MASTER_USER = 'replica',
+     MASTER_PASSWORD = 'replica_pass',
+     MASTER_LOG_FILE = 'mysql-bin.000001',
+     MASTER_LOG_POS = 123;
+   ```
+
+3. **Démarrage de la Réplication** :
+
+   Démarrez la réplication sur le serveur secondaire avec la commande suivante :
+
+   ```sql
+   START SLAVE;
+   ```
+
+4. **Vérifiez l'État de la Réplication** :
+
+   Pour vérifier que la réplication fonctionne correctement, exécutez la commande suivante :
+
+   ```sql
+   SHOW SLAVE STATUS\G;
+   ```
+
+   Assurez-vous de rechercher l'état `Slave_IO_Running` et `Slave_SQL_Running`. Ces valeurs doivent être définies sur `Yes` pour indiquer que la réplication est en cours d'exécution.
+
+Une fois ces étapes effectuées, la réplication maître-esclave devrait être configurée et fonctionnelle entre le serveur principal (master) et le serveur secondaire (slave). Les données du serveur principal seront répliquées sur le serveur secondaire. Assurez-vous de surveiller régulièrement l'état de la réplication pour vous assurer qu'elle fonctionne correctement.
