@@ -62,3 +62,61 @@ Ce projet vise à créer un environnement Docker Swarm avec plusieurs réplicas 
    ```bash
    docker service ls
    ```
+6. **Configuration Master MariaDB :**
+
+   Pour configurer MariaDB en tant que maître dans votre environnement Docker Swarm, vous devrez suivre ces étapes :
+
+   - Assurez-vous que le service MariaDB est en cours d'exécution.
+
+   - Connectez-vous à la base de données MariaDB en utilisant l'une des réplicas en cours d'exécution :
+
+   ```bash
+   docker exec -it <ID_DU_CONTENEUR_MARIADB> mysql -u root -p
+      ```
+
+   - Une fois connecté à MariaDB, configurez le serveur en tant que maître en exécutant les commandes SQL suivantes (remplacez les valeurs par celles appropriées) :
+
+      ```sql
+      STOP SLAVE;
+      RESET SLAVE;
+
+      CHANGE MASTER TO
+      MASTER_HOST='<ADRESSE_IP_DU_MAITRE>',
+         MASTER_PORT=3306,
+         MASTER_USER='replication_user',
+         MASTER_PASSWORD='replication_password',
+         MASTER_AUTO_POSITION=1;
+
+         START SLAVE;
+         ```
+> Assurez-vous de remplacer `<ADRESSE_IP_DU_MAITRE>`, `replication_user` et `replication_password` par les informations appropriées.
+
+7. **Configuration Slave MariaDB :**
+
+Pour configurer MariaDB en tant qu'esclave dans votre environnement Docker Swarm, suivez ces étapes :
+- Assurez-vous que le service MariaDB est en cours d'exécution.
+- Connectez-vous à la base de données MariaDB en utilisant l'une des réplicas en cours d'exécution :
+
+            ```bash
+            docker exec -it <ID_DU_CONTENEUR_MARIADB> mysql -u root -p
+               ```
+
+  - Une fois connecté à MariaDB, configurez le serveur en tant qu'esclave en exécutant les commandes SQL suivantes (remplacez les valeurs par celles appropriées) :
+
+               ```sql
+               STOP SLAVE;
+               RESET SLAVE;
+
+               CHANGE MASTER TO
+               MASTER_HOST='<ADRESSE_IP_DU_MAITRE>',
+                  MASTER_PORT=3306,
+                  MASTER_USER='replication_user',
+                  MASTER_PASSWORD='replication_password',
+                  MASTER_AUTO_POSITION=1;
+
+                  START SLAVE;
+                  ```
+Assurez-vous de remplacer `<ADRESSE_IP_DU_MAITRE>`, `replication_user` et `replication_password` par les informations appropriées.
+Cela configure MariaDB en mode maître-esclave pour la réplication des données. Assurez-vous que les informations de configuration sont cohérentes entre le maître et l'esclave.
+
+
