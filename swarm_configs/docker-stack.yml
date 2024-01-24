@@ -1,17 +1,44 @@
 version: '3.7'
 
 services:
-  mariadb:
+  mariadb-master:
     image: mariadb:latest
-    volumes:
-      - mariadb_data:/var/lib/mysql
-      - ../mariadb/initdb:/docker-entrypoint-initdb.d
     environment:
       MYSQL_ROOT_PASSWORD: "root"
       MYSQL_USER: "appuser"
       MYSQL_PASSWORD: "root"
+      MYSQL_REPLICATION_MODE: master
+      MYSQL_REPLICATION_USER: replica
+      MYSQL_REPLICATION_PASSWORD: replica_pass
+    volumes:
+      - mariadb_data_master:/var/lib/mysql
+      - ../mariadb/master/my.cnf:/etc/mysql/conf.d/my_custom.cnf
+      - ../mariadb/initdb:/docker-entrypoint-initdb.d
     networks:
       - backend
+    deploy:
+      replicas: 1
+    hostname: mariadb-master
+  mariadb-slave:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_USER: "appuser"
+      MYSQL_PASSWORD: "root"
+      MYSQL_REPLICATION_MODE: slave
+      MYSQL_REPLICATION_USER: "replica"
+      MYSQL_REPLICATION_PASSWORD: "replica_pass"
+      MYSQL_MASTER_HOST: mariadb-master
+      MYSQL_MASTER_PORT: 3306
+    volumes:
+      - mariadb_data_slave:/var/lib/mysql
+      - ../mariadb/slave/my.cnf:/etc/mysql/conf.d/my_custom.cnf
+      - ../mariadb/initdb:/docker-entrypoint-initdb.d
+    networks:
+      - backend
+    deploy:
+      replicas: 1
+    hostname: mariadb-slave
 
   nodejs_app1:
     image: test_nodejs_app1:latest
@@ -68,12 +95,28 @@ services:
     depends_on:
       - prometheus
 
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - "8082:80"
+    environment:
+      PMA_HOST: mariadb-master  # Le nom du service MariaDB
+      PMA_USER: "appuser"  # Utilisateur MariaDB
+      PMA_PASSWORD: "root"  # Mot de passe de l'utilisateur MariaDB
+
+    networks:
+      - backend
+    depends_on:
+      - mariadb
 
 volumes:
-  mariadb_data:
+  mariadb_data_master:
+  mariadb_data_slave:
   prometheus_data:
   grafana_data:
 
 networks:
   frontend:
   backend:
+
+
