@@ -4,7 +4,7 @@
 # Docker Swarm avec Réplicas - README
 
 Ce projet vise à créer un environnement Docker Swarm avec plusieurs réplicas d'un service pour garantir la haute disponibilité 
-
+[![](https://mermaid.ink/img/pako:eNp9kU9rhDAQxb9KmFMKu4X26KGgCF50EVpvucya0c2iieQPtCz73Rtri7YF55Rf3rzHC7lBayRBAr3F6cLecqFZHBfOy0U6TYNq0SujF2WelJ-i6fHqZpk9PaxK9kt5_lZIS6H_BJcGJctwQN2SXQNKfuqVft8x5ujxjI5WT8UrtArzbMdVGa28sUr3q6_mtTUj-QsFt3lDwQuLHWrciWvctnTDZ_6_nrLj8YWVC2RbKL-g2kK9QLGF5scDBxjJjqhk_KrbLAqIvUcSkMSjpA7D4AUIfY-rGLx5_dAtJN4GOkCYJHrKFcbyIyQdDo7unzVPkyQ?type=png)](https://mermaid.live/edit#pako:eNp9kU9rhDAQxb9KmFMKu4X26KGgCF50EVpvucya0c2iieQPtCz73Rtri7YF55Rf3rzHC7lBayRBAr3F6cLecqFZHBfOy0U6TYNq0SujF2WelJ-i6fHqZpk9PaxK9kt5_lZIS6H_BJcGJctwQN2SXQNKfuqVft8x5ujxjI5WT8UrtArzbMdVGa28sUr3q6_mtTUj-QsFt3lDwQuLHWrciWvctnTDZ_6_nrLj8YWVC2RbKL-g2kK9QLGF5scDBxjJjqhk_KrbLAqIvUcSkMSjpA7D4AUIfY-rGLx5_dAtJN4GOkCYJHrKFcbyIyQdDo7unzVPkyQ)
 ## Fonctionnement de l'Environnement
 
 1. **Docker Swarm** : Docker Swarm est un orchestrateur de conteneurs qui permet de gérer et de déployer des conteneurs sur un cluster de nœuds. Il offre des fonctionnalités telles que la mise à l'échelle automatique et la répartition de la charge.
