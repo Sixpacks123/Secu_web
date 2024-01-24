@@ -32,6 +32,7 @@ Ce projet vise à créer un environnement Docker Swarm avec plusieurs réplicas 
 1. Build the Node.js app image:
 
    ```bash
+   cd node_js
    docker build -t test_nodejs_app1 .
    ```
 
