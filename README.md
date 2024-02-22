@@ -62,7 +62,7 @@ Ce projet vise à créer un environnement Docker Swarm avec plusieurs réplicas 
    ```bash
    docker service ls
    ```
-Bien sûr, voici une explication plus détaillée sur la configuration de la réplication maître-esclave (master-slave) dans MariaDB en suivant les étapes sur le serveur principal (master) et le serveur secondaire (slave) :
+
 
 # MariDb config
 ### Sur le Serveur Principal (Master) :
