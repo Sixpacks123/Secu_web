@@ -8,9 +8,8 @@ solution et	proposer des solutions d’amélioration.
 
 ## Participants
 
+Heurtault Aubin
+Bacha Amine
+Boutier Lise
 
-
-
-
-# Commande
-
+Tout le code est présent sur la branch dev
